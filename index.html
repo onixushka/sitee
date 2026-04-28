@@ -1,508 +1,816 @@
-
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Ludo Casino</title>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@400;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Exo+2:wght@100;200;300;600&display=swap');
-*{box-sizing:border-box;margin:0;padding:0;}
+  :root {
+    --bg: #0d0d0d;
+    --bg2: #161616;
+    --bg3: #1e1e1e;
+    --purple: #8b5cf6;
+    --purple-light: #a78bfa;
+    --purple-dark: #6d28d9;
+    --text: #f5f5f5;
+    --text2: #a0a0a0;
+    --border: rgba(255,255,255,0.08);
+    --radius: 16px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+  body {
+    font-family: 'Inter', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
 
-/* custom cursor */
+  /* ── SCREENS ── */
+  .screen { display: none; flex-direction: column; min-height: 100vh; }
+  .screen.active { display: flex; }
 
-.site{background:#050508;color:#e2d4ff;font-family:'Exo 2',sans-serif;width:100%;overflow:hidden;font-size:21px;}
-@media(max-width:768px){.site{cursor:auto;}}
-.px{font-family:'Share Tech Mono',monospace;}
+  /* ── HERO ── */
+  #screen-home {
+    background: radial-gradient(ellipse at 50% 0%, rgba(139,92,246,0.18) 0%, transparent 70%), var(--bg);
+    align-items: center;
+  }
+  .hero-bg {
+    position: absolute; top: 0; left: 0; right: 0; height: 320px;
+    background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 320"><circle cx="50" cy="80" r="60" fill="%238b5cf610"/><circle cx="350" cy="200" r="80" fill="%238b5cf608"/><circle cx="200" cy="300" r="120" fill="%238b5cf606"/></svg>') center/cover;
+    pointer-events: none;
+  }
+  .logo-wrap {
+    margin-top: 56px;
+    text-align: center;
+    position: relative;
+    z-index: 1;
+  }
+  .logo-icon {
+    width: 90px; height: 90px;
+    background: linear-gradient(135deg, #8b5cf6, #a855f7);
+    border-radius: 28px;
+    display: flex; align-items: center; justify-content: center;
+    margin: 0 auto 18px;
+    font-size: 48px;
+    box-shadow: 0 0 40px rgba(139,92,246,0.35);
+  }
+  .logo-title {
+    font-family: 'Unbounded', sans-serif;
+    font-size: 28px; font-weight: 700;
+    letter-spacing: 2px;
+    color: #fff;
+  }
+  .logo-sub {
+    font-size: 13px; color: var(--text2);
+    margin-top: 6px; letter-spacing: 1px;
+  }
 
-@keyframes fadeUp{from{opacity:0;transform:translateY(28px)}to{opacity:1;transform:translateY(0)}}
-@keyframes fadeIn{from{opacity:0}to{opacity:1}}
-@keyframes scanIn{from{opacity:0;clip-path:inset(0 0 100% 0)}to{opacity:1;clip-path:inset(0 0 0% 0)}}
-@keyframes blinkCursor{0%,100%{opacity:1}49%{opacity:1}50%{opacity:0}99%{opacity:0}}
-@keyframes tickerScroll{from{transform:translateX(0)}to{transform:translateX(-50%)}}
-@keyframes pulseRing{0%,100%{transform:translate(-50%,-50%) scale(1);opacity:.7}50%{transform:translate(-50%,-50%) scale(1.5);opacity:0}}
+  /* ── BET FORM ── */
+  .bet-form {
+    margin-top: 32px;
+    padding: 0 20px;
+    width: 100%;
+    position: relative; z-index: 1;
+    flex: 1;
+  }
+  .form-card {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 20px;
+    margin-bottom: 14px;
+  }
+  .form-label {
+    font-size: 11px; font-weight: 600;
+    text-transform: uppercase; letter-spacing: 1.5px;
+    color: var(--text2); margin-bottom: 12px;
+  }
+  .select-box {
+    width: 100%;
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    color: var(--text);
+    font-family: 'Inter', sans-serif;
+    font-size: 15px;
+    padding: 13px 16px;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23a78bfa' stroke-width='2' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 14px center;
+    cursor: pointer;
+    outline: none;
+  }
+  .select-box:focus { border-color: var(--purple); }
+  .select-box option { background: #1e1e1e; }
 
-.anim-fadeup{opacity:0;animation:fadeUp .7s ease forwards;}
-.anim-fadein{opacity:0;animation:fadeIn .6s ease forwards;}
-.anim-scan{opacity:0;animation:scanIn .6s ease forwards;}
+  /* Choice grid */
+  .choice-grid {
+    display: grid; grid-template-columns: 1fr 1fr;
+    gap: 10px; margin-top: 4px;
+  }
+  .choice-btn {
+    background: var(--bg3);
+    border: 1.5px solid var(--border);
+    border-radius: 12px;
+    color: var(--text2);
+    font-size: 13px; font-weight: 500;
+    padding: 13px 10px;
+    cursor: pointer;
+    transition: all 0.15s;
+    text-align: center;
+    font-family: 'Inter', sans-serif;
+  }
+  .choice-btn:active { transform: scale(0.97); }
+  .choice-btn.selected {
+    border-color: var(--purple);
+    background: rgba(139,92,246,0.14);
+    color: var(--purple-light);
+  }
+  .choice-btn.disabled { opacity: 0.3; pointer-events: none; }
 
-/* 3D tilt glass panels */
-.glass-card{
-  position:relative;
-  overflow:visible;
-  transform-style:preserve-3d;
-  transition:transform .08s ease-out, box-shadow .3s ease;
-  will-change:transform;
-}
-.glass-card .gc-shine{
-  position:absolute;inset:0;
-  background:linear-gradient(135deg,rgba(168,85,247,0.08) 0%,transparent 60%);
-  opacity:0;transition:opacity .3s;pointer-events:none;z-index:4;
-  border-radius:inherit;
-}
-.glass-card:hover .gc-shine{opacity:1;}
-.glass-card .gc-border{
-  position:absolute;inset:0;
-  border:1px solid rgba(168,85,247,0);
-  transition:border-color .3s;pointer-events:none;z-index:5;
-}
-.glass-card:hover .gc-border{border-color:rgba(168,85,247,0.35);}
-.glass-card .gc-glow{
-  position:absolute;inset:-1px;
-  opacity:0;transition:opacity .4s;pointer-events:none;z-index:3;
-  box-shadow:0 0 30px rgba(124,58,237,0.2), inset 0 0 20px rgba(124,58,237,0.04);
-}
-.glass-card:hover .gc-glow{opacity:1;}
+  /* Guess grid 3x2 */
+  .choice-grid-3 { grid-template-columns: 1fr 1fr 1fr; }
 
-/* HEADER */
-.hdr{background:#050508;border-bottom:1px solid #1a0a2e;padding:0 52px;height:68px;display:flex;align-items:center;justify-content:space-between;}
-.logo-wrap{display:flex;align-items:center;gap:16px;}
-.logo-pixels{display:grid;grid-template-columns:repeat(5,8px);grid-template-rows:repeat(5,8px);gap:1.5px;}
-.lp{width:8px;height:8px;}
-.lp-0{background:#050508;}.lp-1{background:#7c3aed;}.lp-2{background:#a855f7;}.lp-4{background:#c084fc;}
-.logo-name{font-family:'Share Tech Mono',monospace;font-size:27px;letter-spacing:6px;color:#c084fc;}
-.logo-name span{color:#fff;opacity:.9;}
-.nav-links{display:flex;gap:36px;}
-.nav-links a{font-family:'Share Tech Mono',monospace;font-size:15px;letter-spacing:3px;color:rgba(180,140,255,.4);text-decoration:none;text-transform:uppercase;transition:color .2s;}
-.nav-links a:hover{color:#a855f7;}
-.nav-btn{font-family:'Share Tech Mono',monospace;font-size:15px;letter-spacing:3px;border:1px solid #7c3aed;color:#a855f7;padding:10px 20px;background:transparent;text-transform:uppercase;transition:background .2s,color .2s;}
-.nav-btn:hover{background:#7c3aed;color:#fff;}
+  /* Bet input */
+  .bet-row {
+    display: flex; align-items: center;
+    gap: 10px;
+  }
+  .bet-input {
+    flex: 1;
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    color: var(--text);
+    font-family: 'Inter', sans-serif;
+    font-size: 20px; font-weight: 600;
+    padding: 13px 16px;
+    outline: none;
+    width: 100%;
+  }
+  .bet-input:focus { border-color: var(--purple); }
+  .bet-input::placeholder { color: var(--text2); font-size: 15px; font-weight: 400; }
+  .currency-tag {
+    background: rgba(139,92,246,0.15);
+    border: 1px solid rgba(139,92,246,0.3);
+    border-radius: 10px;
+    color: var(--purple-light);
+    font-size: 13px; font-weight: 600;
+    padding: 8px 12px;
+    letter-spacing: 0.5px;
+  }
+  .min-hint {
+    font-size: 12px; color: var(--text2);
+    margin-top: 10px;
+  }
+  .min-hint span { color: var(--purple-light); }
 
-/* HERO */
-.hero{background:#050508;padding:80px 52px 64px;display:flex;gap:48px;position:relative;min-height:480px;}
-.hero-scanlines{position:absolute;inset:0;background:repeating-linear-gradient(0deg,transparent,transparent 3px,rgba(100,40,180,.015) 3px,rgba(100,40,180,.015) 4px);pointer-events:none;}
-.hero-left{flex:1;z-index:2;}
-.hero-kicker{font-family:'Share Tech Mono',monospace;font-size:15px;letter-spacing:4px;color:#7c3aed;text-transform:uppercase;margin-bottom:28px;display:flex;align-items:center;gap:12px;}
-.hero-kicker::before{content:'';display:block;width:24px;height:1px;background:#7c3aed;}
-.hero-h1{font-size:83px;font-weight:100;line-height:1.05;color:#fff;letter-spacing:-1px;margin-bottom:16px;}
-.px-accent{font-family:'Share Tech Mono',monospace;font-size:77px;color:#a855f7;display:block;letter-spacing:3px;font-weight:400;}
-.cursor{display:inline-block;color:#7c3aed;animation:blinkCursor 1.1s step-end infinite;}
-.hero-sub{font-size:19px;font-weight:300;color:rgba(200,170,255,.4);letter-spacing:1.5px;line-height:2.2;margin-bottom:4px;max-width:380px;}
-.hero-subb{font-size:24px;font-weight:300;color:rgba(255, 255, 255, 0.644);letter-spacing:1.5px;line-height:2;margin-bottom:50px;margin-top:1px;max-width:380px;font-family: v;}
-.hero-btns{display:flex;gap:14px;}
-.btn-v{background:#7c3aed;border:none;color:#fff;padding:15px 32px;font-family:'Share Tech Mono',monospace;font-size:15px;letter-spacing:3px;text-transform:uppercase;transition:background .2s;}
-.btn-v:hover{background:#9333ea;}
-.btn-b{background:transparent;border:1px solid rgba(124,58,237,.35);color:rgba(200,170,255,.45);padding:15px 32px;font-family:'Share Tech Mono',monospace;font-size:15px;letter-spacing:3px;text-transform:uppercase;transition:border-color .2s,color .2s;}
-.btn-b:hover{border-color:#7c3aed;color:#c084fc;}
-.hero-right{width:300px;display:flex;align-items:center;justify-content:center;z-index:2;}
-.bracket-tl,.bracket-tr,.bracket-bl,.bracket-br{position:absolute;width:22px;height:22px;}
-.bracket-tl{top:20px;left:20px;border-top:1px solid #7c3aed;border-left:1px solid #7c3aed;}
-.bracket-tr{top:20px;right:20px;border-top:1px solid #7c3aed;border-right:1px solid #7c3aed;}
-.bracket-bl{bottom:20px;left:20px;border-bottom:1px solid #7c3aed;border-left:1px solid #7c3aed;}
-.bracket-br{bottom:20px;right:20px;border-bottom:1px solid #7c3aed;border-right:1px solid #7c3aed;}
+  /* Multiplier badge */
+  .mult-row {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-top: 14px;
+    padding-top: 14px;
+    border-top: 1px solid var(--border);
+  }
+  .mult-label { font-size: 13px; color: var(--text2); }
+  .mult-value {
+    font-size: 18px; font-weight: 700;
+    font-family: 'Unbounded', sans-serif;
+    color: var(--purple-light);
+  }
+  .payout-est {
+    font-size: 12px; color: var(--text2);
+    text-align: right; margin-top: 4px;
+  }
+  .payout-est span { color: #4ade80; font-weight: 600; }
 
-/* TICKER */
-.ticker{background:#0a0514;border-top:1px solid #1a0a2e;border-bottom:1px solid #1a0a2e;padding:13px 0;overflow:hidden;}
-.ticker-track{display:flex;gap:56px;white-space:nowrap;font-family:'Share Tech Mono',monospace;font-size:15px;letter-spacing:3px;color:rgba(124,58,237,.5);text-transform:uppercase;animation:tickerScroll 32s linear infinite;}
-.ticker-dot{color:#7c3aed;}
+  /* CTA button */
+  .cta-wrap { padding: 0 20px 32px; width: 100%; position: relative; z-index: 1; }
+  .btn-cta {
+    width: 100%;
+    background: linear-gradient(135deg, #8b5cf6, #a855f7);
+    border: none;
+    border-radius: 16px;
+    color: #fff;
+    font-family: 'Unbounded', sans-serif;
+    font-size: 15px; font-weight: 600;
+    padding: 18px;
+    cursor: pointer;
+    letter-spacing: 0.5px;
+    transition: all 0.15s;
+    box-shadow: 0 4px 24px rgba(139,92,246,0.35);
+  }
+  .btn-cta:active { transform: scale(0.98); box-shadow: 0 2px 12px rgba(139,92,246,0.25); }
+  .btn-cta:disabled { opacity: 0.35; cursor: not-allowed; transform: none; }
 
-/* STATS */
-.stats{background:#050508;display:grid;grid-template-columns:repeat(4,1fr);border-bottom:1px solid #0f0620;}
-.stat{padding:36px 28px;border-right:1px solid #0f0620;text-align:center;}
-.stat:last-child{border-right:none;}
-.stat-n{font-size:56px;font-weight:100;color:#a855f7;letter-spacing:1px;}
-.stat-n.px{font-family:'Share Tech Mono',monospace;font-size:48px;}
-.stat-l{font-size:13px;letter-spacing:3px;color:rgba(160,120,220,.35);text-transform:uppercase;margin-top:6px;}
+  /* ── PAYMENT SCREEN ── */
+  #screen-payment {
+    align-items: center;
+    justify-content: center;
+    padding: 32px 24px;
+    background: radial-gradient(ellipse at 50% 30%, rgba(139,92,246,0.12) 0%, transparent 70%), var(--bg);
+  }
+  .pay-card {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 24px;
+    padding: 28px 24px;
+    width: 100%;
+    max-width: 380px;
+  }
+  .pay-title {
+    font-family: 'Unbounded', sans-serif;
+    font-size: 18px; font-weight: 700;
+    text-align: center; margin-bottom: 24px;
+  }
+  .pay-row {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 12px 0;
+    border-bottom: 1px solid var(--border);
+    font-size: 14px;
+  }
+  .pay-row:last-of-type { border-bottom: none; }
+  .pay-key { color: var(--text2); }
+  .pay-val { font-weight: 600; color: var(--text); }
+  .pay-val.green { color: #4ade80; }
+  .pay-val.purple { color: var(--purple-light); }
+  .timer-bar-wrap {
+    background: var(--bg3);
+    border-radius: 8px; height: 6px;
+    margin: 20px 0; overflow: hidden;
+  }
+  .timer-bar {
+    height: 100%; width: 100%;
+    background: linear-gradient(90deg, #8b5cf6, #a855f7);
+    border-radius: 8px;
+    transition: width 1s linear;
+  }
+  .pay-hint { font-size: 12px; color: var(--text2); text-align: center; margin-bottom: 20px; }
+  .btn-pay {
+    width: 100%;
+    background: linear-gradient(135deg, #8b5cf6, #a855f7);
+    border: none; border-radius: 14px;
+    color: #fff;
+    font-family: 'Unbounded', sans-serif;
+    font-size: 14px; font-weight: 600;
+    padding: 16px; cursor: pointer;
+    box-shadow: 0 4px 20px rgba(139,92,246,0.3);
+    transition: all 0.15s;
+    margin-bottom: 12px;
+  }
+  .btn-pay:active { transform: scale(0.98); }
+  .btn-back {
+    width: 100%; background: transparent;
+    border: 1px solid var(--border);
+    border-radius: 14px; color: var(--text2);
+    font-family: 'Inter', sans-serif;
+    font-size: 14px; padding: 14px; cursor: pointer;
+    transition: all 0.15s;
+  }
+  .btn-back:active { background: var(--bg3); }
 
-/* SERVICES */
-.services{background:#020205;padding:80px 52px;}
-.sec-top{margin-bottom:48px;}
-.sec-eyebrow{font-family:'Share Tech Mono',monospace;font-size:13px;letter-spacing:4px;color:#7c3aed;text-transform:uppercase;margin-bottom:12px;display:flex;align-items:center;gap:10px;}
-.sec-eyebrow::before{content:'//';color:rgba(124,58,237,.4);}
-.sec-h2{font-size:56px;font-weight:100;color:#fff;letter-spacing:1px;}
-.sec-h2 em{font-style:normal;color:#a855f7;}
-.sec-line{width:40px;height:1px;background:#7c3aed;margin-top:14px;}
-.srv-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:#0f0620;}
-.srv{background:#020205;padding:36px 26px 30px;position:relative;transition:background .3s;}
-.srv:hover{background:#070412;}
-.srv-top-bar{height:2px;margin-bottom:24px;}
-.srv-top-bar.v{background:#7c3aed;}.srv-top-bar.c{background:#00bfbf;}.srv-top-bar.p{background:#c026d3;}.srv-top-bar.b{background:#4f46e5;}
-.srv-idx{font-family:'Share Tech Mono',monospace;font-size:13px;letter-spacing:3px;color:rgba(124,58,237,.3);margin-bottom:16px;}
-.srv-ico{margin-bottom:20px;transition:transform .35s cubic-bezier(.22,1,.36,1);}
-.srv:hover .srv-ico{transform:translateY(-5px);}
-.srv-title{font-size:17px;font-weight:300;color:#e2d4ff;letter-spacing:3px;text-transform:uppercase;margin-bottom:12px;}
-.srv-title.px{font-family:'Share Tech Mono',monospace;font-size:16px;}
-.srv-desc{font-size:16px;color:rgba(180,140,255,.35);line-height:2;font-weight:300;}
-.srv-more{margin-top:22px;font-family:'Share Tech Mono',monospace;font-size:13px;letter-spacing:2px;color:rgba(124,58,237,.45);text-transform:uppercase;transition:color .2s;}
-.srv:hover .srv-more{color:#a855f7;}
+  /* ── RESULT SCREEN ── */
+  #screen-result {
+    align-items: center;
+    justify-content: center;
+    padding: 32px 24px;
+  }
+  .result-win { background: radial-gradient(ellipse at 50% 20%, rgba(74,222,128,0.12) 0%, transparent 60%), var(--bg); }
+  .result-lose { background: radial-gradient(ellipse at 50% 20%, rgba(239,68,68,0.1) 0%, transparent 60%), var(--bg); }
+  .result-icon {
+    font-size: 72px; text-align: center; margin-bottom: 20px;
+    animation: pop 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+  }
+  @keyframes pop {
+    from { transform: scale(0.3) rotate(-15deg); opacity: 0; }
+    to { transform: scale(1) rotate(0); opacity: 1; }
+  }
+  .result-title {
+    font-family: 'Unbounded', sans-serif;
+    font-size: 26px; font-weight: 700;
+    text-align: center; margin-bottom: 8px;
+  }
+  .result-title.win { color: #4ade80; }
+  .result-title.lose { color: #f87171; }
+  .result-dice {
+    font-size: 48px; text-align: center; margin: 20px 0;
+    letter-spacing: 8px;
+  }
+  .result-card {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 20px 24px;
+    width: 100%; max-width: 380px;
+    margin-bottom: 24px;
+  }
+  .result-row {
+    display: flex; justify-content: space-between;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--border);
+    font-size: 14px;
+  }
+  .result-row:last-child { border-bottom: none; }
+  .result-key { color: var(--text2); }
+  .result-val { font-weight: 600; }
+  .result-val.win-color { color: #4ade80; }
+  .btn-again {
+    width: 100%; max-width: 380px;
+    background: linear-gradient(135deg, #8b5cf6, #a855f7);
+    border: none; border-radius: 14px;
+    color: #fff;
+    font-family: 'Unbounded', sans-serif;
+    font-size: 14px; font-weight: 600;
+    padding: 17px; cursor: pointer;
+    box-shadow: 0 4px 20px rgba(139,92,246,0.3);
+    margin-bottom: 12px;
+    transition: all 0.15s;
+  }
+  .btn-again:active { transform: scale(0.98); }
 
-/* PORTFOLIO */
-.portfolio{background:#050508;padding:80px 52px;}
-.port-grid{display:grid;grid-template-columns:1.8fr 1fr 1fr;grid-template-rows:auto auto;gap:1px;background:#0f0620;margin-top:10px;}
-.port-card{background:#020205;padding:28px;min-height:200px;display:flex;flex-direction:column;justify-content:flex-end;position:relative;overflow:hidden;}
-.port-card.big{min-height:420px;}
-.port-vox{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;opacity:.18;transition:opacity .4s;}
-.port-card:hover .port-vox{opacity:.32;}
-.port-bar{position:absolute;bottom:0;left:0;right:0;height:1px;background:#7c3aed;opacity:.6;transition:opacity .3s;}
-.port-card:hover .port-bar{opacity:1;}
-.port-cat{font-family:'Share Tech Mono',monospace;font-size:12px;letter-spacing:3px;color:rgba(0,191,191,.55);text-transform:uppercase;margin-bottom:8px;position:relative;z-index:2;}
-.port-name{font-size:27px;font-weight:200;color:#fff;letter-spacing:2px;position:relative;z-index:2;transition:color .2s;}
-.port-name.px{font-family:'Share Tech Mono',monospace;font-size:21px;letter-spacing:3px;}
-.port-card:hover .port-name{color:#c084fc;}
-.port-spec{font-size:15px;color:rgba(160,120,220,.35);letter-spacing:1px;margin-top:6px;position:relative;z-index:2;}
-.port-wide{grid-column:2/4;}
-.port-wide-inner{display:flex;justify-content:space-between;align-items:center;}
-.see-all{font-family:'Share Tech Mono',monospace;font-size:13px;letter-spacing:3px;color:rgba(124,58,237,.4);text-transform:uppercase;transition:color .2s;}
-.see-all:hover{color:#a855f7;}
+  /* ── LOADING ── */
+  #screen-loading {
+    align-items: center; justify-content: center;
+    background: var(--bg);
+  }
+  .spin-ring {
+    width: 56px; height: 56px;
+    border: 3px solid rgba(139,92,246,0.2);
+    border-top-color: var(--purple);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+    margin-bottom: 20px;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .loading-text {
+    font-size: 15px; color: var(--text2);
+    font-family: 'Unbounded', sans-serif;
+    font-size: 13px; letter-spacing: 1px;
+  }
 
-/* CONTACT */
-.contact{background:#020205;padding:80px 52px;display:grid;grid-template-columns:1fr 1fr;gap:80px;align-items:start;}
-.contact-blurb{font-size:17px;font-weight:300;color:rgba(180,140,255,.35);letter-spacing:1px;line-height:2.2;margin-bottom:32px;max-width:300px;}
-.c-detail{display:flex;align-items:center;gap:14px;margin-bottom:14px;}
-.c-px{font-family:'Share Tech Mono',monospace;font-size:15px;color:#7c3aed;width:18px;}
-.c-val{font-size:16px;color:rgba(200,170,255,.45);letter-spacing:1.5px;font-weight:300;}
-.form{display:flex;flex-direction:column;gap:12px;}
-.f-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
-.f-in{background:#050508;border:1px solid #1a0a2e;padding:13px 16px;font-family:'Share Tech Mono',monospace;font-size:15px;color:#c084fc;letter-spacing:1px;outline:none;width:100%;transition:border-color .2s;}
-.f-in:focus{border-color:#7c3aed;}
-.f-in::placeholder{color:rgba(124,58,237,.3);}
-.f-sel{background:#050508;border:1px solid #1a0a2e;padding:13px 16px;font-family:'Share Tech Mono',monospace;font-size:15px;color:rgba(124,58,237,.4);letter-spacing:1px;outline:none;width:100%;-webkit-appearance:none;transition:border-color .2s;}
-.f-sel:focus{border-color:#7c3aed;}
-.f-ta{background:#050508;border:1px solid #1a0a2e;padding:13px 16px;font-family:'Share Tech Mono',monospace;font-size:15px;color:#c084fc;letter-spacing:1px;outline:none;resize:none;height:90px;width:100%;transition:border-color .2s;}
-.f-ta:focus{border-color:#7c3aed;}
-.f-ta::placeholder,.f-sel::placeholder{color:rgba(124,58,237,.3);}
-.f-submit{background:#7c3aed;border:none;color:#fff;padding:15px;font-family:'Share Tech Mono',monospace;font-size:15px;letter-spacing:4px;text-transform:uppercase;margin-top:2px;transition:background .2s;}
-.f-submit:hover{background:#9333ea;}
+  /* ── CHECK SCREEN ── */
+  #screen-check {
+    align-items: center; justify-content: center;
+    padding: 32px 24px;
+    background: radial-gradient(ellipse at 50% 20%, rgba(74,222,128,0.1) 0%, transparent 60%), var(--bg);
+  }
+  .check-card {
+    background: var(--bg2);
+    border: 1px solid rgba(74,222,128,0.2);
+    border-radius: 24px;
+    padding: 32px 24px;
+    width: 100%; max-width: 380px;
+    text-align: center;
+  }
+  .check-icon { font-size: 56px; margin-bottom: 16px; }
+  .check-title {
+    font-family: 'Unbounded', sans-serif;
+    font-size: 20px; font-weight: 700;
+    color: #4ade80; margin-bottom: 8px;
+  }
+  .check-sub { font-size: 14px; color: var(--text2); margin-bottom: 24px; }
+  .check-amount {
+    font-family: 'Unbounded', sans-serif;
+    font-size: 36px; font-weight: 700;
+    color: #4ade80; margin-bottom: 6px;
+  }
+  .check-currency { font-size: 13px; color: var(--text2); margin-bottom: 28px; }
+  .btn-claim {
+    width: 100%;
+    background: linear-gradient(135deg, #22c55e, #16a34a);
+    border: none; border-radius: 14px;
+    color: #fff;
+    font-family: 'Unbounded', sans-serif;
+    font-size: 14px; font-weight: 600;
+    padding: 17px; cursor: pointer;
+    box-shadow: 0 4px 20px rgba(34,197,94,0.3);
+    margin-bottom: 12px;
+    transition: all 0.15s;
+  }
+  .btn-claim:active { transform: scale(0.98); }
 
-/* FOOTER */
-.footer{background:#020205;border-top:1px solid #0f0620;padding:26px 52px;display:flex;justify-content:space-between;align-items:center;}
-.f-logo{font-family:'Share Tech Mono',monospace;font-size:16px;letter-spacing:5px;color:rgba(124,58,237,.3);}
-.f-links{display:flex;gap:28px;}
-.f-links a{font-family:'Share Tech Mono',monospace;font-size:13px;letter-spacing:2px;color:rgba(124,58,237,.2);text-decoration:none;text-transform:uppercase;}
-.f-copy{font-family:'Share Tech Mono',monospace;font-size:13px;letter-spacing:2px;color:rgba(124,58,237,.18);}
+  /* NAV tabs */
+  .bottom-nav {
+    position: fixed; bottom: 0; left: 0; right: 0;
+    background: var(--bg2);
+    border-top: 1px solid var(--border);
+    display: flex;
+    padding: 12px 0 24px;
+    z-index: 100;
+  }
+  .nav-item {
+    flex: 1; display: flex; flex-direction: column;
+    align-items: center; gap: 4px;
+    font-size: 10px; color: var(--text2);
+    cursor: pointer; transition: color 0.15s;
+    font-weight: 500; letter-spacing: 0.3px;
+  }
+  .nav-item.active { color: var(--purple-light); }
+  .nav-icon { font-size: 20px; }
 
+  /* show nav only on home */
+  body:not(.show-nav) .bottom-nav { display: none; }
+  .with-nav { padding-bottom: 80px; }
 
-
-/* MOBILE OPTIMIZATIONS */
-@media(max-width:768px){
-  .glass-card{will-change:auto;}
-  .glass-card .gc-glow{display:none;}
-  .glass-card:hover{background:#020205;}
-  .hero{flex-direction:column;padding:40px 20px;}
-  .hero-right{width:100%;margin-top:20px;order:2;}
-  .hero-left{order:1;}
-  .hero-h1{font-size:48px;}
-  .px-accent{font-size:44px;}
-  .ticker-track{gap:20px;}
-  .stats{grid-template-columns:repeat(2,1fr);}
-  .srv-grid{grid-template-columns:repeat(2,1fr);}
-  .port-grid{grid-template-columns:1fr;}
-  .port-card.big{min-height:250px;}
-  .contact{grid-template-columns:1fr;gap:40px;}
-}
-
-@media(max-width:480px){
-  .hero{padding:30px 16px;}
-  .hero-h1{font-size:36px;}
-  .px-accent{font-size:32px;}
-  .services{padding:40px 16px;}
-  .portfolio{padding:40px 16px;}
-  .contact{padding:40px 16px;}
-  .footer{padding:16px 20px;flex-direction:column;gap:12px;text-align:center;}
-  .stats{grid-template-columns:1fr;}
-  .srv-grid{grid-template-columns:1fr;}
-  .hdr{padding:0 16px;height:56px;}
-  .nav-links{gap:16px;}
-  .nav-btn{padding:8px 16px;font-size:12px;}
-}
+  /* ── ERROR TOAST ── */
+  .toast {
+    position: fixed; bottom: 100px; left: 50%; transform: translateX(-50%);
+    background: #ef4444; color: #fff;
+    border-radius: 10px; padding: 10px 20px;
+    font-size: 13px; font-weight: 500;
+    z-index: 999; display: none;
+    white-space: nowrap;
+  }
 </style>
+</head>
+<body>
 
-<!-- custom cursor -->
-<div id="cur">
-  <div id="cur-ring"></div>
-  <div id="cur-dot"></div>
-  <div id="cur-cross-h"></div>
-  <div id="cur-cross-v"></div>
-</div>
-
-<div class="site">
-<header class="hdr">
-    <div class="logo-wrap anim-fadein" style="animation-delay:.1s">
-    <div class="logo-pixels">
-      <div class="lp lp-0"></div><div class="lp lp-1"></div><div class="lp lp-0"></div><div class="lp lp-1"></div><div class="lp lp-0"></div>
-      <div class="lp lp-1"></div><div class="lp lp-4"></div><div class="lp lp-2"></div><div class="lp lp-4"></div><div class="lp lp-1"></div>
-      <div class="lp lp-0"></div><div class="lp lp-2"></div><div class="lp lp-4"></div><div class="lp lp-2"></div><div class="lp lp-0"></div>
-      <div class="lp lp-1"></div><div class="lp lp-4"></div><div class="lp lp-2"></div><div class="lp lp-4"></div><div class="lp lp-1"></div>
-      <div class="lp lp-0"></div><div class="lp lp-1"></div><div class="lp lp-0"></div><div class="lp lp-1"></div><div class="lp lp-0"></div>
-    </div>
-    <div class="logo-name">VOX<span>FORGE</span></div>
+<!-- ── SCREEN: HOME ── -->
+<div id="screen-home" class="screen active with-nav">
+  <div class="hero-bg"></div>
+  <div class="logo-wrap">
+    <div class="logo-icon">🎲</div>
+    <div class="logo-title">LUDO CASINO</div>
+    <div class="logo-sub">CRYPTO DICE GAMES</div>
   </div>
-  <nav class="nav-links anim-fadein" style="animation-delay:.25s">
-    <a href="#">Услуги</a><a href="#">Сборки</a><a href="#">Цены</a><a href="#">О нас</a>
-  </nav>
-  <button class="nav-btn anim-fadein" style="animation-delay:.35s">Заказать</button>
-</header>
 
-<section class="hero" style="position:relative;">
-  <div class="hero-scanlines"></div>
-  <div class="bracket-tl"></div><div class="bracket-tr"></div>
-  <div class="bracket-bl"></div><div class="bracket-br"></div>
-  <div class="hero-left">
-    <div class="hero-kicker anim-fadeup" style="animation-delay:.3s">Сборка и обслуживание ПК</div>
-    <h1 class="hero-h1">
-      <span class="anim-fadeup" style="animation-delay:.45s;display:block;">Твой идеальный</span>
-      <span class="px-accent anim-scan" style="animation-delay:.7s;">КОМПЬЮТЕР<span class="cursor">_</span></span>
-    </h1>
-    <p class="hero-sub anim-fadeup" style="animation-delay:.9s;">Проектируем, собираем и обслуживаем игровые ПК любой сложности.</p>
-    <p class="hero-subb anim-fadeup" style="animation-delay:1.5s;">Точно. Быстро. Надолго.</p>
-    <div class="hero-btns anim-fadeup" style="animation-delay:1.05s;">
-      <button class="btn-v">Начать сборку</button>
-      <button class="btn-b">Смотреть работы</button>
+  <div class="bet-form">
+    <!-- Game select -->
+    <div class="form-card">
+      <div class="form-label">Выберите игру</div>
+      <select class="select-box" id="game-select" onchange="onGameChange()">
+        <option value="">— Выберите игру —</option>
+        <option value="highlow">📊 Больше / Меньше (x1.8)</option>
+        <option value="evenodd">🔢 Чётное / Нечётное (x1.8)</option>
+        <option value="duel">⚔️ Дуэль кубиков (x1.8)</option>
+        <option value="sector">🎡 Сектор (x2.3)</option>
+        <option value="doublebig">🎲🎲 Двойной бросок (x2.8)</option>
+        <option value="guess">🎯 Угадай число (x3.1)</option>
+      </select>
     </div>
-  </div>
-  <div class="hero-right anim-fadein" style="animation-delay:.65s;">
-  <picture>
-    <source srcset="pc.gif" type="image/webp">
-    <img src="pc.gif" alt="Анимация ПК" 
-         width="260" height="290" 
-         style="width:100%; height:auto; max-width:26000px; filter:drop-shadow(0 0 80px rgba(168,85,247,0.4));">
-  </picture>
-</div>
-</section>
 
-<div class="ticker">
-  <div class="ticker-track">
-    <span>СБОРКА ПК</span><span class="ticker-dot">//</span>
-    <span>ЧИСТКА И ОБСЛУЖИВАНИЕ</span><span class="ticker-dot">//</span>
-    <span>АПГРЕЙД ЖЕЛЕЗА</span><span class="ticker-dot">//</span>
-    <span>ДИАГНОСТИКА И РЕМОНТ</span><span class="ticker-dot">//</span>
-    <span>КАСТОМНЫЕ КУЛЕРЫ</span><span class="ticker-dot">//</span>
-    <span>ПОДБОР КОМПЛЕКТУЮЩИХ</span><span class="ticker-dot">//</span>
-    <span>СБОРКА ПК</span><span class="ticker-dot">//</span>
-    <span>ЧИСТКА И ОБСЛУЖИВАНИЕ</span><span class="ticker-dot">//</span>
-    <span>АПГРЕЙД ЖЕЛЕЗА</span><span class="ticker-dot">//</span>
-    <span>ДИАГНОСТИКА И РЕМОНТ</span><span class="ticker-dot">//</span>
-    <span>КАСТОМНЫЕ КУЛЕРЫ</span><span class="ticker-dot">//</span>
-    <span>ПОДБОР КОМПЛЕКТУЮЩИХ</span><span class="ticker-dot">//</span>
-  </div>
-</div>
-
-<div class="stats">
-  <div class="stat anim-fadeup" style="animation-delay:.2s"><div class="stat-n px">847+</div><div class="stat-l">Сборок выполнено</div></div>
-  <div class="stat anim-fadeup" style="animation-delay:.35s"><div class="stat-n">99.4%</div><div class="stat-l">Довольных клиентов</div></div>
-  <div class="stat anim-fadeup" style="animation-delay:.5s"><div class="stat-n px">4ч</div><div class="stat-l">Среднее время сборки</div></div>
-  <div class="stat anim-fadeup" style="animation-delay:.65s"><div class="stat-n">5 лет</div><div class="stat-l">Гарантия на работы</div></div>
-</div>
-
-<section class="services">
-  <div class="sec-top anim-fadeup" style="animation-delay:.1s">
-    <div class="sec-eyebrow">Что мы делаем</div>
-    <h2 class="sec-h2">Наши <em>услуги</em></h2>
-    <div class="sec-line"></div>
-  </div>
-  <div class="srv-grid">
-    <div class="srv glass-card anim-fadeup" style="animation-delay:.15s">
-      <div class="gc-shine"></div><div class="gc-border"></div><div class="gc-glow"></div>
-      <div class="srv-top-bar v"></div><div class="srv-idx">01</div>
-      <div class="srv-ico"><svg width="44" height="44" viewBox="0 0 36 36"><polygon points="6,16 18,10 30,16 18,22" fill="#1a0a2e" stroke="#7c3aed" stroke-width="0.75"/><polygon points="6,16 18,22 18,30 6,24" fill="#050508" stroke="#3d1060" stroke-width="0.75"/><polygon points="18,22 30,16 30,24 18,30" fill="#0a0514" stroke="#5b2196" stroke-width="0.75"/><circle cx="18" cy="14" r="3" fill="none" stroke="#5b2196" stroke-width="0.5"/><circle cx="18" cy="14" r="1" fill="#a855f7"/></svg></div>
-      <div class="srv-title px">Сборка под ключ</div>
-      <div class="srv-desc">Подбираем комплектующие, собираем, тестируем. Всё включено.</div>
-      <div class="srv-more">Подробнее →</div>
-    </div>
-    <div class="srv glass-card anim-fadeup" style="animation-delay:.25s">
-      <div class="gc-shine"></div><div class="gc-border"></div><div class="gc-glow"></div>
-      <div class="srv-top-bar c"></div><div class="srv-idx">02</div>
-      <div class="srv-ico"><svg width="44" height="44" viewBox="0 0 36 36"><circle cx="18" cy="18" r="13" fill="none" stroke="#1a0a2e" stroke-width="0.5"/><circle cx="18" cy="18" r="8" fill="#050508" stroke="#007070" stroke-width="0.5"/><path d="M18 7 Q21 12 18 15 Q15 12 18 7" fill="#00bfbf" opacity=".5"/><path d="M29 18 Q24 21 21 18 Q24 15 29 18" fill="#00bfbf" opacity=".5"/><path d="M18 29 Q15 24 18 21 Q21 24 18 29" fill="#00bfbf" opacity=".5"/><path d="M7 18 Q12 15 15 18 Q12 21 7 18" fill="#00bfbf" opacity=".5"/><circle cx="18" cy="18" r="2.5" fill="#050508" stroke="#00bfbf" stroke-width="0.5"/></svg></div>
-      <div class="srv-title">Чистка и сервис</div>
-      <div class="srv-desc">Термопаста, пыль, продув — возвращаем температуры в норму.</div>
-      <div class="srv-more">Подробнее →</div>
-    </div>
-    <div class="srv glass-card anim-fadeup" style="animation-delay:.35s">
-      <div class="gc-shine"></div><div class="gc-border"></div><div class="gc-glow"></div>
-      <div class="srv-top-bar p"></div><div class="srv-idx">03</div>
-      <div class="srv-ico"><svg width="44" height="44" viewBox="0 0 36 36"><polygon points="3,20 18,13 33,20 18,27" fill="#1a0a2e" stroke="#7c3aed" stroke-width="0.75"/><polygon points="3,20 18,27 18,33 3,26" fill="#050508" stroke="#3d1060" stroke-width="0.75"/><polygon points="18,27 33,20 33,26 18,33" fill="#0a0514" stroke="#5b2196" stroke-width="0.75"/><rect x="7" y="17" width="5" height="3" fill="#c026d3" opacity=".6" transform="skewX(-28) skewY(18) translate(3,-3)"/><rect x="16" y="17" width="5" height="3" fill="#a855f7" opacity=".4" transform="skewX(-28) skewY(18) translate(3,-3)"/></svg></div>
-      <div class="srv-title px">Апгрейд железа</div>
-      <div class="srv-desc">Замена GPU, RAM, SSD. Максимум из бюджета.</div>
-      <div class="srv-more">Подробнее →</div>
-    </div>
-    <div class="srv glass-card anim-fadeup" style="animation-delay:.45s">
-      <div class="gc-shine"></div><div class="gc-border"></div><div class="gc-glow"></div>
-      <div class="srv-top-bar b"></div><div class="srv-idx">04</div>
-      <div class="srv-ico"><svg width="44" height="44" viewBox="0 0 36 36"><polygon points="9,26 19,17 27,17 27,21 17,30" fill="#1a0a2e" stroke="#4f46e5" stroke-width="0.5"/><polygon points="19,9 23,9 27,13 27,17 19,17" fill="#0a0514" stroke="#4f46e5" stroke-width="0.5"/><circle cx="22" cy="13" r="3" fill="none" stroke="#4f46e5" stroke-width="0.75"/><rect x="9" y="26" width="5" height="5" fill="#050508" stroke="#4f46e5" stroke-width="0.5" rx="1"/></svg></div>
-      <div class="srv-title">Диагностика</div>
-      <div class="srv-desc">BSOD, POST-ошибки, зависания — найдём и исправим.</div>
-      <div class="srv-more">Подробнее →</div>
-    </div>
-  </div>
-</section>
-
-<section class="portfolio">
-  <div class="sec-top anim-fadeup" style="animation-delay:.1s">
-    <div class="sec-eyebrow">Наши работы</div>
-    <h2 class="sec-h2">Галерея <em>сборок</em></h2>
-    <div class="sec-line"></div>
-  </div>
-  <div class="port-grid">
-    <div class="port-card big glass-card anim-fadeup" style="animation-delay:.2s">
-      <div class="gc-shine"></div><div class="gc-border"></div><div class="gc-glow"></div>
-      <div class="port-vox"><svg width="170" height="200" viewBox="0 0 160 190"><polygon points="30,55 80,30 130,55 80,80" fill="#1a0a2e" stroke="#7c3aed" stroke-width="0.75"/><polygon points="30,55 80,80 80,160 30,135" fill="#050508" stroke="#3d1060" stroke-width="0.75"/><polygon points="80,80 130,55 130,135 80,160" fill="#0a0514" stroke="#5b2196" stroke-width="0.75"/><polygon points="34,57 76,82 76,155 34,130" fill="#050508" stroke="#5b2196" stroke-width="0.5"/><line x1="34" y1="130" x2="76" y2="155" stroke="#a855f7" stroke-width="2" opacity=".6"/><ellipse cx="80" cy="170" rx="44" ry="8" fill="rgba(124,58,237,0.12)"/></svg></div>
-      <div class="port-bar"></div>
-      <div class="port-cat">Флагман · 2025</div>
-      <div class="port-name px">MIDNIGHT_SPECTER</div>
-      <div class="port-spec">RTX 5090 · i9-14900K · 128GB DDR5</div>
-    </div>
-    <div class="port-card glass-card anim-fadeup" style="animation-delay:.3s">
-      <div class="gc-shine"></div><div class="gc-border"></div><div class="gc-glow"></div>
-      <div class="port-bar" style="background:#00bfbf;"></div>
-      <div class="port-cat">Воркстейшн</div>
-      <div class="port-name">Cyan Storm</div>
-      <div class="port-spec">RTX 4080 · Threadripper</div>
-    </div>
-    <div class="port-card glass-card anim-fadeup" style="animation-delay:.4s">
-      <div class="gc-shine"></div><div class="gc-border"></div><div class="gc-glow"></div>
-      <div class="port-bar"></div>
-      <div class="port-cat">Игровой</div>
-      <div class="port-name px">VIOLET_WRAITH</div>
-      <div class="port-spec">RTX 4090 · Ryzen 9</div>
-    </div>
-    <div class="port-card port-wide glass-card anim-fadeup" style="animation-delay:.5s">
-      <div class="gc-shine"></div><div class="gc-border"></div><div class="gc-glow"></div>
-      <div class="port-wide-inner">
-        <div>
-          <div class="port-cat">Тихий билд · 2024</div>
-          <div class="port-name">White Noise</div>
-          <div class="port-spec">RTX 4070 Ti · Полностью белый · Нулевой шум</div>
+    <!-- Choice -->
+    <div class="form-card" id="choice-card">
+      <div class="form-label" id="choice-label">Сначала выберите игру</div>
+      <div id="choice-area">
+        <div class="choice-grid">
+          <button class="choice-btn disabled">—</button>
+          <button class="choice-btn disabled">—</button>
         </div>
-        <div class="see-all">Все работы →</div>
+      </div>
+    </div>
+
+    <!-- Bet amount -->
+    <div class="form-card">
+      <div class="form-label">Сумма ставки</div>
+      <div class="bet-row">
+        <input class="bet-input" type="number" id="bet-input" placeholder="0.00" min="0.1" max="10" step="0.1" oninput="onBetChange()">
+        <div class="currency-tag">USDT</div>
+      </div>
+      <div class="min-hint">Мин: <span>$0.10</span> &nbsp;/&nbsp; Макс: <span>$10.00</span></div>
+      <div class="mult-row">
+        <div>
+          <div class="mult-label">Коэффициент</div>
+        </div>
+        <div style="text-align:right">
+          <div class="mult-value" id="mult-display">—</div>
+          <div class="payout-est" id="payout-display"></div>
+        </div>
       </div>
     </div>
   </div>
-</section>
 
-<section class="contact">
-  <div class="anim-fadeup" style="animation-delay:.15s">
-    <div class="sec-eyebrow" style="margin-bottom:12px;">// Связаться</div>
-    <h2 class="sec-h2" style="margin-bottom:8px;">Начать <em>проект</em></h2>
-    <div class="sec-line" style="margin-bottom:32px;"></div>
-    <p class="contact-blurb">Расскажи, что нужно. Мы подберём конфиг и пришлём смету в течение 24 часов.</p>
-    <div class="c-detail"><div class="c-px">></div><div class="c-val">hello@voxforge.ru</div></div>
-    <div class="c-detail"><div class="c-px">></div><div class="c-val">Пн–Сб · 10:00–19:00</div></div>
-    <div class="c-detail"><div class="c-px">></div><div class="c-val">Москва, Россия</div></div>
+  <div class="cta-wrap">
+    <button class="btn-cta" id="btn-bet" disabled onclick="goToPayment()">СДЕЛАТЬ СТАВКУ</button>
   </div>
-  <div class="form anim-fadeup" style="animation-delay:.3s">
-    <div class="f-row">
-      <input class="f-in" type="text" placeholder="Имя">
-      <input class="f-in" type="text" placeholder="Фамилия">
-    </div>
-    <input class="f-in" type="email" placeholder="Email">
-    <select class="f-sel">
-      <option>Выбери услугу</option>
-      <option>Сборка под ключ</option>
-      <option>Чистка и сервис</option>
-      <option>Апгрейд железа</option>
-      <option>Диагностика</option>
-    </select>
-    <textarea class="f-ta" placeholder="Опиши задачу или проблему..."></textarea>
-    <button class="f-submit">Отправить заявку →</button>
-  </div>
-</section>
-
-<footer class="footer">
-  <div class="f-logo">VOXFORGE_STUDIO</div>
-  <div class="f-links"><a href="#">Политика</a><a href="#">Telegram</a><a href="#">VK</a></div>
-  <div class="f-copy">© 2025 VoxForge. Все права защищены.</div>
-</footer>
 </div>
 
+<!-- ── SCREEN: PAYMENT ── -->
+<div id="screen-payment" class="screen">
+  <div class="pay-card">
+    <div class="pay-title">💜 Счёт на оплату</div>
+    <div class="pay-row"><span class="pay-key">Режим</span><span class="pay-val" id="pay-mode">—</span></div>
+    <div class="pay-row"><span class="pay-key">Ваш выбор</span><span class="pay-val purple" id="pay-choice">—</span></div>
+    <div class="pay-row"><span class="pay-key">Ставка</span><span class="pay-val" id="pay-amount">—</span></div>
+    <div class="pay-row"><span class="pay-key">Возможный выигрыш</span><span class="pay-val green" id="pay-win">—</span></div>
+    <div class="timer-bar-wrap"><div class="timer-bar" id="timer-bar"></div></div>
+    <div class="pay-hint" id="pay-timer-text">Счёт действителен 10 минут</div>
+    <button class="btn-pay" onclick="simulatePay()">💳 ОПЛАТИТЬ В CRYPTOBOT</button>
+    <button class="btn-back" onclick="goBack()">← Назад</button>
+  </div>
+</div>
+
+<!-- ── SCREEN: LOADING (rolling dice) ── -->
+<div id="screen-loading" class="screen">
+  <div class="spin-ring"></div>
+  <div class="loading-text" id="loading-text">БРОСАЮ КУБИК...</div>
+</div>
+
+<!-- ── SCREEN: RESULT ── -->
+<div id="screen-result" class="screen">
+  <div class="result-icon" id="result-icon">🎲</div>
+  <div class="result-title" id="result-title">—</div>
+  <div class="result-dice" id="result-dice"></div>
+  <div class="result-card">
+    <div class="result-row"><span class="result-key">Режим</span><span class="result-val" id="res-mode">—</span></div>
+    <div class="result-row"><span class="result-key">Выбор</span><span class="result-val" id="res-choice">—</span></div>
+    <div class="result-row"><span class="result-key">Ставка</span><span class="result-val" id="res-bet">—</span></div>
+    <div class="result-row"><span class="result-key">Выпало</span><span class="result-val" id="res-dice">—</span></div>
+    <div class="result-row"><span class="result-key">Результат</span><span class="result-val" id="res-payout">—</span></div>
+  </div>
+  <button class="btn-again" onclick="goHome()">🎲 ИГРАТЬ ЕЩЁ</button>
+  <button class="btn-back" style="max-width:380px;width:100%" onclick="goHome()">← Главное меню</button>
+</div>
+
+<!-- ── SCREEN: CHECK (WIN PAYOUT) ── -->
+<div id="screen-check" class="screen">
+  <div class="check-card">
+    <div class="check-icon">🏆</div>
+    <div class="check-title">ПОБЕДА!</div>
+    <div class="check-sub">Ваш выигрыш готов к получению</div>
+    <div class="check-amount" id="check-amount">$0.00</div>
+    <div class="check-currency">USDT</div>
+    <button class="btn-claim" id="btn-claim">💚 ЗАБРАТЬ ВЫИГРЫШ</button>
+    <button class="btn-again" onclick="goHome()">🎲 Играть ещё</button>
+  </div>
+</div>
+
+<!-- ── BOTTOM NAV ── -->
+<div class="bottom-nav">
+  <div class="nav-item active" onclick="goHome()">
+    <div class="nav-icon">🎲</div>
+    <div>Играть</div>
+  </div>
+  <div class="nav-item" onclick="showProfile()">
+    <div class="nav-icon">👤</div>
+    <div>Профиль</div>
+  </div>
+  <div class="nav-item" onclick="showHistory()">
+    <div class="nav-icon">📜</div>
+    <div>История</div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
 <script>
-// Detect mobile device
-const isMobile = () => window.innerWidth <= 768 || /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+const tg = window.Telegram && window.Telegram.WebApp;
+if (tg) {
+  tg.ready();
+  tg.expand();
+  document.documentElement.style.setProperty('--tg-safe', tg.viewportStableHeight + 'px');
+}
 
-const cur = document.getElementById('cur');
-const ring = document.getElementById('cur-ring');
-const dot = document.getElementById('cur-dot');
+const GAMES = {
+  highlow: { name: 'Больше / Меньше', mult: 1.8, choices: [
+    { val: 'high', label: '🟣 БОЛЬШЕ (4–6)' },
+    { val: 'low',  label: '⚫ МЕНЬШЕ (1–3)' },
+  ]},
+  evenodd: { name: 'Чётное / Нечётное', mult: 1.8, choices: [
+    { val: 'even', label: '🟣 ЧЁТНОЕ (2,4,6)' },
+    { val: 'odd',  label: '⚫ НЕЧЁТНОЕ (1,3,5)' },
+  ]},
+  duel: { name: 'Дуэль кубиков', mult: 1.8, choices: [
+    { val: 'win',  label: '⚔️ ПОБЕДА' },
+    { val: 'lose', label: '🛡 ПОРАЖЕНИЕ' },
+  ]},
+  sector: { name: 'Сектор', mult: 2.3, choices: [
+    { val: '1', label: 'СЕКТОР 1 (1–2)' },
+    { val: '2', label: 'СЕКТОР 2 (3–4)' },
+    { val: '3', label: 'СЕКТОР 3 (5–6)' },
+  ]},
+  doublebig: { name: 'Двойной бросок', mult: 2.8, choices: [
+    { val: 'low',  label: '⚫ МЕНЬШЕ (оба 1–3)' },
+    { val: 'high', label: '🟣 БОЛЬШЕ (оба 4–6)' },
+  ]},
+  guess: { name: 'Угадай число', mult: 3.1, choices: [
+    { val: '1', label: '1' },{ val: '2', label: '2' },{ val: '3', label: '3' },
+    { val: '4', label: '4' },{ val: '5', label: '5' },{ val: '6', label: '6' },
+  ]},
+};
+const DICE_FACES = {1:'⚀',2:'⚁',3:'⚂',4:'⚃',5:'⚄',6:'⚅'};
 
-let mx = 0, my = 0, rx = 0, ry = 0;
+let state = { game: '', choice: '', bet: 0 };
 
-// Only enable custom cursor on desktop
-if (!isMobile()) {
-  document.addEventListener('mousemove', e => {
-    mx = e.clientX; my = e.clientY;
-    cur.style.left = mx + 'px';
-    cur.style.top = my + 'px';
-  });
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.style.display = 'block';
+  setTimeout(() => t.style.display = 'none', 2800);
+}
 
-  // smooth ring follow with lag
-  function animCursor() {
-    rx += (mx - rx) * 0.12;
-    ry += (my - ry) * 0.12;
-    ring.style.left = (rx - mx) + 'px';
-    ring.style.top = (ry - my) + 'px';
-    requestAnimationFrame(animCursor);
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  // Show nav only on home
+  document.body.classList.toggle('show-nav', id === 'screen-home');
+  // result class
+  if (id !== 'screen-result') {
+    document.getElementById('screen-result').className = 'screen';
   }
-  animCursor();
-
-  // cursor states
-  document.querySelectorAll('.glass-card, button, a, select, input, textarea').forEach(el => {
-    el.addEventListener('mouseenter', () => {
-      ring.style.width = '56px';
-      ring.style.height = '56px';
-      ring.style.borderColor = '#c084fc';
-      ring.style.background = 'rgba(168,85,247,0.06)';
-      dot.style.width = '3px';
-      dot.style.height = '3px';
-    });
-    el.addEventListener('mouseleave', () => {
-      ring.style.width = '36px';
-      ring.style.height = '36px';
-      ring.style.borderColor = '#a855f7';
-      ring.style.background = 'transparent';
-      dot.style.width = '5px';
-      dot.style.height = '5px';
-    });
-  });
-} else {
-  // Hide custom cursor on mobile
-  cur.style.display = 'none';
 }
 
-// 3D tilt on glass cards - only on desktop
-if (!isMobile()) {
-  document.querySelectorAll('.glass-card').forEach(card => {
-    const shine = card.querySelector('.gc-shine');
+function onGameChange() {
+  const g = document.getElementById('game-select').value;
+  state.game = g; state.choice = '';
+  const area = document.getElementById('choice-area');
+  const label = document.getElementById('choice-label');
+  const multEl = document.getElementById('mult-display');
+  const payEl = document.getElementById('payout-display');
 
-    card.addEventListener('mousemove', e => {
-      const r = card.getBoundingClientRect();
-      const x = e.clientX - r.left;
-      const y = e.clientY - r.top;
-      const cx = r.width / 2;
-      const cy = r.height / 2;
-      const dx = (x - cx) / cx;
-      const dy = (y - cy) / cy;
+  if (!g) {
+    label.textContent = 'Сначала выберите игру';
+    area.innerHTML = `<div class="choice-grid"><button class="choice-btn disabled">—</button><button class="choice-btn disabled">—</button></div>`;
+    multEl.textContent = '—'; payEl.textContent = '';
+    checkReady(); return;
+  }
+  const gd = GAMES[g];
+  label.textContent = 'Ваш выбор';
+  multEl.textContent = `x${gd.mult}`;
+  updatePayout();
 
-      const tiltX = -dy * 9;
-      const tiltY = dx * 9;
-      const tz = -18;
-
-      card.style.transform = `perspective(900px) rotateX(${tiltX}deg) rotateY(${tiltY}deg) translateZ(${tz}px)`;
-      card.style.transition = 'transform .05s ease-out';
-
-      if (shine) {
-        const angle = Math.atan2(dy, dx) * (180 / Math.PI) + 90;
-        shine.style.background = `linear-gradient(${angle}deg, rgba(168,85,247,0.13) 0%, rgba(168,85,247,0.03) 40%, transparent 70%)`;
-        shine.style.opacity = '1';
-      }
-    });
-
-    card.addEventListener('mouseleave', () => {
-      card.style.transform = 'perspective(900px) rotateX(0deg) rotateY(0deg) translateZ(0px)';
-      card.style.transition = 'transform .5s cubic-bezier(.22,1,.36,1)';
-      if (shine) shine.style.opacity = '0';
-    });
-
-    card.addEventListener('mousedown', () => {
-      card.style.transform = 'perspective(900px) rotateX(0deg) rotateY(0deg) translateZ(-28px) scale(0.98)';
-    });
-    card.addEventListener('mouseup', () => {
-      card.style.transform = 'perspective(900px) rotateX(0deg) rotateY(0deg) translateZ(-18px)';
-    });
-  });
-} else {
-  // Reset glass card transforms on mobile
-  document.querySelectorAll('.glass-card').forEach(card => {
-    card.style.transform = 'none';
-    card.style.transition = 'background .3s';
-  });
+  const isGuess = g === 'guess';
+  const isSector = g === 'sector';
+  const cols = isGuess ? 'choice-grid choice-grid-3' : (isSector ? 'choice-grid' : 'choice-grid');
+  area.innerHTML = `<div class="${cols}">${gd.choices.map(c =>
+    `<button class="choice-btn" onclick="selectChoice('${c.val}', this)">${c.label}</button>`
+  ).join('')}</div>`;
+  checkReady();
 }
 
-// Force reflow to ensure all animations play
-window.addEventListener('load', () => {
-  document.querySelectorAll('[class*="anim-"]').forEach(el => {
-    void el.offsetWidth; // Trigger reflow
-  });
-});
+function selectChoice(val, el) {
+  state.choice = val;
+  document.querySelectorAll('.choice-btn').forEach(b => b.classList.remove('selected'));
+  el.classList.add('selected');
+  checkReady();
+}
+
+function onBetChange() {
+  const v = parseFloat(document.getElementById('bet-input').value) || 0;
+  state.bet = v;
+  updatePayout();
+  checkReady();
+}
+
+function updatePayout() {
+  if (!state.game) return;
+  const gd = GAMES[state.game];
+  const mult = document.getElementById('mult-display');
+  mult.textContent = `x${gd.mult}`;
+  const p = document.getElementById('payout-display');
+  if (state.bet >= 0.1) {
+    const win = (state.bet * gd.mult).toFixed(2);
+    p.innerHTML = `Выигрыш: <span>$${win}</span>`;
+  } else {
+    p.innerHTML = '';
+  }
+}
+
+function checkReady() {
+  const ok = state.game && state.choice && state.bet >= 0.1 && state.bet <= 10;
+  document.getElementById('btn-bet').disabled = !ok;
+}
+
+function choiceLabel(game, choice) {
+  const gd = GAMES[game];
+  if (!gd) return choice;
+  const c = gd.choices.find(x => x.val === choice);
+  return c ? c.label : choice;
+}
+
+function goToPayment() {
+  const gd = GAMES[state.game];
+  const win = (state.bet * gd.mult).toFixed(2);
+  document.getElementById('pay-mode').textContent = gd.name;
+  document.getElementById('pay-choice').textContent = choiceLabel(state.game, state.choice);
+  document.getElementById('pay-amount').textContent = `$${parseFloat(state.bet).toFixed(2)} USDT`;
+  document.getElementById('pay-win').textContent = `$${win} USDT`;
+  showScreen('screen-payment');
+  startTimer();
+}
+
+let timerInterval;
+function startTimer() {
+  clearInterval(timerInterval);
+  let secs = 600;
+  const bar = document.getElementById('timer-bar');
+  const txt = document.getElementById('pay-timer-text');
+  bar.style.width = '100%';
+  timerInterval = setInterval(() => {
+    secs--;
+    bar.style.width = (secs / 600 * 100) + '%';
+    const m = Math.floor(secs / 60), s = secs % 60;
+    txt.textContent = `Осталось: ${m}:${s.toString().padStart(2,'0')}`;
+    if (secs <= 0) { clearInterval(timerInterval); txt.textContent = 'Время истекло'; }
+  }, 1000);
+}
+
+function simulatePay() {
+  clearInterval(timerInterval);
+  showScreen('screen-loading');
+  // Simulate dice roll after delay
+  setTimeout(() => {
+    rollDice();
+  }, 2200);
+}
+
+function rollDice() {
+  const d1 = Math.ceil(Math.random() * 6);
+  const needs2 = ['duel', 'doublebig'].includes(state.game);
+  const d2 = needs2 ? Math.ceil(Math.random() * 6) : null;
+
+  const won = checkWin(state.game, state.choice, d1, d2);
+  const gd = GAMES[state.game];
+  const payout = won ? parseFloat((state.bet * gd.mult).toFixed(2)) : 0;
+
+  showResult(won, d1, d2, payout);
+}
+
+function checkWin(game, choice, d1, d2) {
+  if (game === 'highlow') return choice === 'high' ? d1 >= 4 : d1 <= 3;
+  if (game === 'evenodd') return choice === 'even' ? d1 % 2 === 0 : d1 % 2 !== 0;
+  if (game === 'sector') {
+    const s = {'1':[1,2],'2':[3,4],'3':[5,6]};
+    return (s[choice] || []).includes(d1);
+  }
+  if (game === 'guess') return d1 === parseInt(choice);
+  if (game === 'duel') {
+    if (d2 === null) return false;
+    return choice === 'win' ? d1 > d2 : d1 < d2;
+  }
+  if (game === 'doublebig') {
+    if (d2 === null) return false;
+    if (choice === 'low') return d1 <= 3 && d2 <= 3;
+    if (choice === 'high') return d1 >= 4 && d2 >= 4;
+  }
+  return false;
+}
+
+function showResult(won, d1, d2, payout) {
+  const gd = GAMES[state.game];
+  const el = document.getElementById('screen-result');
+
+  document.getElementById('result-icon').textContent = won ? '🏆' : '💀';
+  const title = document.getElementById('result-title');
+  title.textContent = won ? 'ПОБЕДА!' : 'ПОРАЖЕНИЕ';
+  title.className = 'result-title ' + (won ? 'win' : 'lose');
+
+  const diceStr = d2 ? `${DICE_FACES[d1]} vs ${DICE_FACES[d2]}` : DICE_FACES[d1];
+  document.getElementById('result-dice').textContent = diceStr;
+
+  document.getElementById('res-mode').textContent = gd.name;
+  document.getElementById('res-choice').textContent = choiceLabel(state.game, state.choice);
+  document.getElementById('res-bet').textContent = `$${parseFloat(state.bet).toFixed(2)} USDT`;
+  document.getElementById('res-dice').textContent = d2 ? `${d1} и ${d2}` : String(d1);
+
+  const payEl = document.getElementById('res-payout');
+  if (won) {
+    payEl.textContent = `+$${payout} USDT`;
+    payEl.className = 'result-val win-color';
+  } else {
+    payEl.textContent = '—';
+    payEl.className = 'result-val';
+  }
+
+  el.className = 'screen ' + (won ? 'result-win' : 'result-lose');
+  showScreen('screen-result');
+
+  if (won) {
+    setTimeout(() => showCheckScreen(payout), 1800);
+  }
+}
+
+function showCheckScreen(payout) {
+  document.getElementById('check-amount').textContent = `$${payout.toFixed(2)}`;
+  document.getElementById('btn-claim').onclick = () => {
+    showToast('Чек выдан! Переходите в @CryptoBot');
+    setTimeout(goHome, 1500);
+  };
+  showScreen('screen-check');
+}
+
+function goBack() { clearInterval(timerInterval); showScreen('screen-home'); document.body.classList.add('show-nav'); }
+function goHome() {
+  state = { game: '', choice: '', bet: 0 };
+  document.getElementById('game-select').value = '';
+  document.getElementById('bet-input').value = '';
+  document.getElementById('mult-display').textContent = '—';
+  document.getElementById('payout-display').textContent = '';
+  document.getElementById('btn-bet').disabled = true;
+  onGameChange();
+  showScreen('screen-home');
+  document.body.classList.add('show-nav');
+}
+
+function showProfile() { showToast('Раздел в разработке'); }
+function showHistory() { showToast('Раздел в разработке'); }
+
+// Init
+document.body.classList.add('show-nav');
 </script>
+</body>
+</html>
